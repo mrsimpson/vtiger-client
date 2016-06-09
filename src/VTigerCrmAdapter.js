@@ -85,4 +85,26 @@ export class VTigerCrmAdapter {
                 });
         }))
     } //findContactsByEMailPromise
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Public methods
+    findContactsByEmail(emailAddress){
+        this.findContactsByEMailPromise(emailAddress)
+            .then((contacts)=>{
+                return contacts;
+            })
+            .catch((err)=>{
+                throw err; //propagate exception
+            })
+
+    }
+
+    createContactForEMail(emailAddress){
+        //stub
+    }
+
+    updateContact(contact){
+        //stub
+    }
+
 }
