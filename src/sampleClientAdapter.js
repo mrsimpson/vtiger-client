@@ -9,7 +9,8 @@ const ELEMENT_TYPE_CONTACT = 'Contacts';
 const adapter = new VTigerCrmAdapter('http://localhost/vtigercrm/webservice.php', USERNAME, USER_ACCESS_KEY);
 
 try {
-    console.log('CONTACTS', adapter.findContactsByEMail('007@sms.db.de').map(contact=>JSON.stringify(contact)))
+    console.log('CONTACTS', adapter.__proto__.findContactsByEMailPromise('007@sms.db.de')
+        .then((contacts)=>{contacts.map(contact=>JSON.stringify(contact))}))
 }
 catch (err) {
     console.error(err);
