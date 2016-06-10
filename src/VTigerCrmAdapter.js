@@ -23,20 +23,25 @@ export class VTigerCrmAdapter {
         this.vTigerApi = new VTigerCrm.DefaultApi(); // Allocate the API class we're going to use.
         this.vTigerApi.apiClient.basePath = basePath;
 
-        this.loginPromise(this.username, this.accessKey)
+/*          We can't login in the constructor as a consumer might immediately issue a subsequent request.
+            Thus, all the resolvers of the login-Promise need to buffer the result in order to take advantage of existing
+            session tokens
+
+            this.loginPromise(this.username, this.accessKey)
             .then((result)=>{
                 this.sessionToken = result
             })
             .catch((err)=>{
                 console.error(err.operation, err.message, err.previous.toString());
                 throw err;
-            });
+            });*/
     }
 
-    loginPromise(username, accesskey) {
+    loginPromise() {
+        const adapterInstance = this;
         return new Promise((resolve, reject)=>{
-            if (this.sessionToken){ resolve(this.sessionToken) } else {
-                this.vTigerApi.operationgetchallengeGet(username, (err, data, response)=> {
+            if (adapterInstance.sessionToken){ resolve(adapterInstance.sessionToken) } else {
+                adapterInstance.vTigerApi.operationgetchallengeGet(adapterInstance.username, (err, data, response)=> {
                     if (err) {
                         throw new VTigerCrmAdapterException( 'GET_CHALLENGE', 'Couldn\'t execute webservice:', err );
                     }
@@ -47,7 +52,7 @@ export class VTigerCrmAdapter {
                     const challengeToken = response.body.result.token;
                     console.log('CHALLENGE_TOKEN', challengeToken);
 
-                    this.vTigerApi.operationloginPost(username, CryptoJS.MD5(challengeToken + this.accesskey).toString(), (err, data, response)=> {
+                    adapterInstance.vTigerApi.operationloginPost(adapterInstance.username, CryptoJS.MD5(challengeToken + adapterInstance.accesskey).toString(), (err, data, response)=> {
                         if (err) {
                             throw new VTigerCrmAdapterException( 'LOGIN', 'Couldn\'t execute webservice:', err );
                         }
@@ -64,13 +69,30 @@ export class VTigerCrmAdapter {
             }})
     }//loginPromise
 
-    findContactsByEMailPromise(emailAddress){
+    static contactSkeletonToWhere(contact, operator){
+        let whereClause = '';
+        for(let key in contact){
+            if (contact.hasOwnProperty(key)){
+                if (whereClause) whereClause += ' ' + operator + ' ';
+                whereClause += key + " LIKE '" + contact[key] + "'";
+            }
+        }
+        return whereClause;
+    }
+
+    findContactsBySkeletonPromise(contactSkeleton, operator){
+        /**
+         * Operator defines how the properties of the contact skeleton are to be combined.
+         * Possible values ['AND', 'OR']
+         */
+        const adapterInstance = this;
         return new Promise((resolve, reject)=>{
-            this.loginPromise(this.username, this.accesskey)
-                .then(()=>{
-                    const queryString = "select * from Contacts where email = '" + emailAddress + "';";
-                    console.log('SESSION_HANDLE_FOR_QUERY', this.sessionToken)
-                    this.vTigerApi.operationqueryGet( this.sessionToken, queryString, (err, data, response)=>{
+            adapterInstance.loginPromise()
+                .then((sessionHandle)=>{
+                    adapterInstance.sessionToken = sessionHandle;
+                    const queryString = "select * from Contacts where " + adapterInstance.contactSkeletonToWhere(contactSkeleton, operator) + ";";
+                    console.log('SESSION_HANDLE_FOR_QUERY', adapterInstance.sessionToken);
+                    adapterInstance.vTigerApi.operationqueryGet( adapterInstance.sessionToken, queryString, (err, data, response)=>{
                         if (err) {
                             throw new VTigerCrmAdapterException( 'QUERY', 'Couldn\'t execute webservice:', err );
                         }
@@ -87,28 +109,15 @@ export class VTigerCrmAdapter {
                     throw err;
                 });
         })
-    } //findContactsByEMailPromise
+    } //findContactsBySkeletonPromise
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Public methods
-    findContactsByEmail(emailAddress){
-        this.findContactsByEMailPromise(emailAddress)
-            .then((contacts)=>{
-                return contacts;
-            })
-            .catch((err)=>{
-                throw err; //propagate exception
-            })
+    findContactsFulltextPromise(text){
+        const contactSkeleton = {
+            lastname: text,
+            firstname: text,
+            email: text
+        };
 
-    }
-
-    createContactForEMail(emailAddress){
-        //stub
-
-    }
-
-    updateContact(contact){
-        //stub
-    }
-
+       return this.findContactsBySkeletonPromise(contactSkeleton, 'OR');
+    } //findContactsFulltextPromise
 }

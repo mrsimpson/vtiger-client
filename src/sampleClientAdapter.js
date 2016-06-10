@@ -8,10 +8,18 @@ const ELEMENT_TYPE_CONTACT = 'Contacts';
 
 const adapter = new VTigerCrmAdapter('http://localhost/vtigercrm/webservice.php', USERNAME, USER_ACCESS_KEY);
 
-try {
-    console.log('CONTACTS', adapter.__proto__.findContactsByEMailPromise('007@sms.db.de')
-        .then((contacts)=>{contacts.map(contact=>JSON.stringify(contact))}))
-}
-catch (err) {
+adapter.findContactsFulltextPromise('007@%')
+    .then((contacts)=> {
+        console.log('CONTACTS', contacts.map(contact=>JSON.stringify(contact)));
+
+        adapter.findContactsFulltextPromise('008@sms.db.de')
+            .then((contacts)=> {
+                console.log('CONTACTS', contacts.map(contact=>JSON.stringify(contact)));
+            })
+            .catch((err)=>{
+                console.error(err);
+            });
+    })
+    .catch((err)=>{
     console.error(err);
-}
+});
