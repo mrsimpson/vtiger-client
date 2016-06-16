@@ -10,16 +10,25 @@ const adapter = new VTigerCrmAdapter('http://localhost/vtigercrm/webservice.php'
 
 adapter.findContactsFulltextPromise('007@%')
     .then((contacts)=> {
-        console.log('CONTACTS', contacts.map(contact=>JSON.stringify(contact)));
+        console.log('CONTACTS', contacts ? contacts.map(contact=>JSON.stringify(contact)) : '<none />');
 
-        adapter.findContactsFulltextPromise('008@sms.db.de')
-            .then((contacts)=> {
-                console.log('CONTACTS', contacts.map(contact=>JSON.stringify(contact)));
+        /*        adapter.findContactsFulltextPromise('008@sms.db.de')
+         .then((contacts)=> {
+         console.log('CONTACTS', contacts.map(contact=>JSON.stringify(contact)));
+         })
+         .catch((err)=>{
+         console.error(err);
+         });
+
+         */
+        adapter.findContactById(contacts[0].id)
+            .then((contact)=> {
+                console.log('CONTACT', JSON.stringify(contact));
             })
-            .catch((err)=>{
+            .catch((err)=> {
                 console.error(err);
             });
     })
-    .catch((err)=>{
-    console.error(err);
-});
+    .catch((err)=> {
+        console.error(err);
+    });

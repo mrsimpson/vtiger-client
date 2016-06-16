@@ -69,10 +69,10 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
                 } else {
                     adapterInstance.vTigerApi.operationgetchallengeGet(adapterInstance.username, function (err, data, response) {
                         if (err) {
-                            throw new VTigerCrmAdapterException('GET_CHALLENGE', 'Couldn\'t execute webservice:', err);
+                            return reject(new VTigerCrmAdapterException('GET_CHALLENGE', 'Couldn\'t execute webservice:', err));
                         }
                         if (!response.body.success) {
-                            throw new VTigerCrmAdapterException('GET_CHALLENGE', 'Couldn\'t receive challenge:', response.body.error.message);
+                            return reject(new VTigerCrmAdapterException('GET_CHALLENGE', 'Couldn\'t receive challenge:', response.body.error.message));
                         }
 
                         var challengeToken = response.body.result.token;
@@ -80,11 +80,11 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
 
                         adapterInstance.vTigerApi.operationloginPost(adapterInstance.username, CryptoJS.MD5(challengeToken + adapterInstance.accesskey).toString(), function (err, data, response) {
                             if (err) {
-                                throw new VTigerCrmAdapterException('LOGIN', 'Couldn\'t execute webservice:', err);
+                                return reject(new VTigerCrmAdapterException('LOGIN', 'Couldn\'t execute webservice:', err));
                             }
 
                             if (!response.body.success) {
-                                throw new VTigerCrmAdapterException('LOGIN', 'Couldn\'t log in:', response.body.error.message);
+                                return reject(new VTigerCrmAdapterException('LOGIN', 'Couldn\'t log in:', response.body.error.message));
                             }
 
                             console.log('SESSION_TOKEN', response.body.result.sessionName);
@@ -96,33 +96,41 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
         } //loginPromise
 
     }, {
+        key: 'queryPromise',
+        value: function queryPromise(queryString) {
+            var adapterInstance = this;
+
+            return new Promise(function (resolve, reject) {
+                if (!adapterInstance.sessionToken) reject(new VTigerCrmAdapterException('QUERY', 'No session token for query'));
+                adapterInstance.vTigerApi.operationqueryGet(adapterInstance.sessionToken, queryString, function (err, data, response) {
+                    if (err) {
+                        return reject(new VTigerCrmAdapterException('QUERY', 'Couldn\'t execute webservice:', err));
+                    }
+
+                    if (!response.body.success) {
+                        return reject(new VTigerCrmAdapterException('QUERY', 'Couldn\'t execute query:', response.body.error.message));
+                    }
+
+                    resolve(response.body.result); //might be initial
+                });
+            });
+        }
+    }, {
         key: 'findContactsBySkeletonPromise',
-        value: function findContactsBySkeletonPromise(contactSkeleton, operator) {
+        value: function findContactsBySkeletonPromise(contactSkeleton) {
+            var operator = arguments.length <= 1 || arguments[1] === undefined ? 'AND' : arguments[1];
+
             /**
              * Operator defines how the properties of the contact skeleton are to be combined.
              * Possible values ['AND', 'OR']
              */
             var adapterInstance = this;
-            return new Promise(function (resolve, reject) {
-                adapterInstance.loginPromise().then(function (sessionHandle) {
-                    adapterInstance.sessionToken = sessionHandle;
-                    var queryString = "select * from Contacts where " + adapterInstance.contactSkeletonToWhere(contactSkeleton, operator) + ";";
-                    console.log('SESSION_HANDLE_FOR_QUERY', adapterInstance.sessionToken);
-                    adapterInstance.vTigerApi.operationqueryGet(adapterInstance.sessionToken, queryString, function (err, data, response) {
-                        if (err) {
-                            throw new VTigerCrmAdapterException('QUERY', 'Couldn\'t execute webservice:', err);
-                        }
+            var queryString = "select * from Contacts where " + VTigerCrmAdapter.contactSkeletonToWhere(contactSkeleton, operator) + ";";
 
-                        if (!response.body.success) {
-                            throw new VTigerCrmAdapterException('QUERY', 'Couldn\'t execute query:', response.body.error.message);
-                        }
-
-                        resolve(response.body.result); //might be initial
-                    });
-                }).catch(function (err) {
-                    console.error(err.operation, err.message, err.previous.toString());
-                    throw err;
-                });
+            return adapterInstance.loginPromise().then(function (sessionHandle) {
+                adapterInstance.sessionToken = sessionHandle;
+            }).then(function () {
+                return adapterInstance.queryPromise(queryString);
             });
         } //findContactsBySkeletonPromise
 
@@ -138,6 +146,11 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
             return this.findContactsBySkeletonPromise(contactSkeleton, 'OR');
         } //findContactsFulltextPromise
 
+    }, {
+        key: 'findContactById',
+        value: function findContactById(contactId) {
+            return this.findContactsBySkeletonPromise({ id: contactId });
+        }
     }], [{
         key: 'contactSkeletonToWhere',
         value: function contactSkeletonToWhere(contact, operator) {
