@@ -18,6 +18,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var VTigerCrm = require('./vtiger_consumer_swagger/src/'); // See note below*.
 var CryptoJS = require('crypto-js');
 
+var ELEMENT_TYPE_CONTACT = 'Contacts';
+
 var VTigerCrmAdapterException = exports.VTigerCrmAdapterException = function (_Error) {
     _inherits(VTigerCrmAdapterException, _Error);
 
@@ -35,33 +37,95 @@ var VTigerCrmAdapterException = exports.VTigerCrmAdapterException = function (_E
 }(Error);
 
 var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
+
+    // ------------------------------------------------ public methods ----------------------------------------------------
+
     function VTigerCrmAdapter(basePath, username, accesskey) {
         _classCallCheck(this, VTigerCrmAdapter);
 
         this.username = username;
         this.accesskey = accesskey;
         this.sessionToken = '';
+        this.assigned_user_id = "19x5";
 
         this.vTigerApi = new VTigerCrm.DefaultApi(); // Allocate the API class we're going to use.
         this.vTigerApi.apiClient.basePath = basePath;
 
         /*          We can't login in the constructor as a consumer might immediately issue a subsequent request.
-                    Thus, all the resolvers of the login-Promise need to buffer the result in order to take advantage of existing
-                    session tokens
-        
-                    this.loginPromise(this.username, this.accessKey)
-                    .then((result)=>{
-                        this.sessionToken = result
-                    })
-                    .catch((err)=>{
-                        console.error(err.operation, err.message, err.previous.toString());
-                        throw err;
-                    });*/
+         Thus, all the resolvers of the login-Promise need to buffer the result in order to take advantage of existing
+         session tokens
+           this._loginPromise(this.username, this.accessKey)
+         .then((result)=>{
+         this.sessionToken = result
+         })
+         .catch((err)=>{
+         console.error(err.operation, err.message, err.previous.toString());
+         throw err;
+         });*/
     }
 
     _createClass(VTigerCrmAdapter, [{
-        key: 'loginPromise',
-        value: function loginPromise() {
+        key: 'findContactsFulltextPromise',
+        value: function findContactsFulltextPromise(text) {
+            var contactSkeleton = {
+                lastname: text,
+                firstname: text,
+                email: text
+            };
+
+            return this.findContactsBySkeletonPromise(contactSkeleton, 'OR');
+        } //findContactsFulltextPromise
+
+    }, {
+        key: 'createContactPromise',
+        value: function createContactPromise(contact) {
+            var adapterInstance = this;
+            contact.assigned_user_id = this.assigned_user_id;
+            return adapterInstance._loginPromise().then(function (sessionToken) {
+                return adapterInstance._createPromise(sessionToken, ELEMENT_TYPE_CONTACT, contact);
+            });
+        }
+    }, {
+        key: 'retrievePromise',
+        value: function retrievePromise(contactId) {
+            var adapterInstance = this;
+            return adapterInstance._loginPromise().then(function (sessionToken) {
+                return adapterInstance._retrievePromise(sessionToken, contactId);
+            });
+        }
+    }, {
+        key: 'updatePromise',
+        value: function updatePromise(contact) {
+            var adapterInstance = this;
+            return adapterInstance._loginPromise().then(function (sessionToken) {
+                return adapterInstance._updatePromise(sessionToken, contact);
+            });
+        }
+    }, {
+        key: 'deletePromise',
+        value: function deletePromise(contactId) {
+            var adapterInstance = this;
+            return adapterInstance._loginPromise().then(function (sessionToken) {
+                return adapterInstance._deletePromise(sessionToken, contactId);
+            });
+        }
+
+        //-------------------------------------------------- private methods ---------------------------------------------------
+        /**
+         * All services offered by vTiger require authorization to be done prior to the webservice-call.
+         * As everything is done asynchronously, the login-promise needs to be resolved before continuing resolving the
+         * actual webservice-promise. Thus, the autorization-rensitive-methods (starting with _) are encapsulated again in a
+         * public method which chains the execution.
+         * Still, the login-method bufferss the result on resolution so that - although the promise is chained as pre-
+         * decessor, the webservices used for authorization are not executed anymore.
+         * It seems as if the sessionToken had an unlimited lifetime.
+         * @returns {Promise}
+         * @private
+         */
+
+    }, {
+        key: '_loginPromise',
+        value: function _loginPromise() {
             var adapterInstance = this;
             return new Promise(function (resolve, reject) {
                 if (adapterInstance.sessionToken) {
@@ -88,21 +152,27 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
                             }
 
                             console.log('SESSION_TOKEN', response.body.result.sessionName);
+                            adapterInstance.sessionToken = response.body.result.sessionName;
                             resolve(response.body.result.sessionName);
                         }); //operationLoginPost
                     }); //operationChallengeGet
                 }
             });
-        } //loginPromise
+        } //_loginPromise
 
     }, {
-        key: 'queryPromise',
-        value: function queryPromise(queryString) {
+        key: '_queryPromise',
+        value: function _queryPromise(sessionToken, queryString) {
+            /**
+             * Promises a query result.
+             * @type {VTigerCrmAdapter}
+             */
+
             var adapterInstance = this;
 
             return new Promise(function (resolve, reject) {
-                if (!adapterInstance.sessionToken) reject(new VTigerCrmAdapterException('QUERY', 'No session token for query'));
-                adapterInstance.vTigerApi.operationqueryGet(adapterInstance.sessionToken, queryString, function (err, data, response) {
+                if (!sessionToken) reject(new VTigerCrmAdapterException('QUERY', 'No session token for query'));
+                adapterInstance.vTigerApi.operationqueryGet(sessionToken, queryString, function (err, data, response) {
                     if (err) {
                         return reject(new VTigerCrmAdapterException('QUERY', 'Couldn\'t execute webservice:', err));
                     }
@@ -116,6 +186,86 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
             });
         }
     }, {
+        key: '_createPromise',
+        value: function _createPromise(sessionToken, objectType, object) {
+            var adapterInstance = this;
+            return new Promise(function (resolve, reject) {
+                if (!sessionToken) return reject(new VTigerCrmAdapterException('CREATE', 'No session token for creation'));
+                adapterInstance.vTigerApi.operationcreatePost(sessionToken, objectType, JSON.stringify(object), function (err, data, response) {
+                    if (err) {
+                        return reject(new VTigerCrmAdapterException('CREATE', 'Couldn\'t execute webservice:', err));
+                    }
+
+                    if (!response.body.success) {
+                        return reject(new VTigerCrmAdapterException('CREATE', 'Couldn\'t create:', response.body.error.message));
+                    }
+
+                    resolve(response.body.result); //might be initial
+                });
+            });
+        } //_createPromise
+
+    }, {
+        key: '_retrievePromise',
+        value: function _retrievePromise(sessionToken, id) {
+            var adapterInstance = this;
+            return new Promise(function (resolve, reject) {
+                if (!sessionToken) return reject(new VTigerCrmAdapterException('RETRIEVE', 'No session token for retrieval'));
+                adapterInstance.vTigerApi.operationretrieveGet(sessionToken, id, function (err, data, response) {
+                    if (err) {
+                        return reject(new VTigerCrmAdapterException('RETRIEVE', 'Couldn\'t execute webservice:', err));
+                    }
+
+                    if (!response.body.success) {
+                        return reject(new VTigerCrmAdapterException('RETRIEVE', 'Couldn\'t retrieve:', response.body.error.message));
+                    }
+
+                    resolve(response.body.result); //might be initial
+                });
+            });
+        } //_retrievePromise
+
+    }, {
+        key: '_updatePromise',
+        value: function _updatePromise(sessionToken, object) {
+            var adapterInstance = this;
+            return new Promise(function (resolve, reject) {
+                if (!sessionToken) return reject(new VTigerCrmAdapterException('UPDATE', 'No session token for update'));
+                adapterInstance.vTigerApi.operationupdatePost(sessionToken, JSON.stringify(object), function (err, data, response) {
+                    if (err) {
+                        return reject(new VTigerCrmAdapterException('UPDATE', 'Couldn\'t execute webservice:', err));
+                    }
+
+                    if (!response.body.success) {
+                        return reject(new VTigerCrmAdapterException('UPDATE', 'Couldn\'t update:', response.body.error.message));
+                    }
+
+                    resolve(response.body.result); //might be initial
+                });
+            });
+        } //_updatePromise
+
+    }, {
+        key: '_deletePromise',
+        value: function _deletePromise(sessionToken, id) {
+            var adapterInstance = this;
+            return new Promise(function (resolve, reject) {
+                if (!sessionToken) return reject(new VTigerCrmAdapterException('DELETE', 'No session token for delete'));
+                adapterInstance.vTigerApi.operationdeletePost(sessionToken, id, function (err, data, response) {
+                    if (err) {
+                        return reject(new VTigerCrmAdapterException('DELETE', 'Couldn\'t execute webservice:', err));
+                    }
+
+                    if (!response.body.success) {
+                        return reject(new VTigerCrmAdapterException('DELETE', 'Couldn\'t delete:', response.body.error.message));
+                    }
+
+                    resolve(response.body.success); //might be initial
+                });
+            });
+        } //_deletePromise
+
+    }, {
         key: 'findContactsBySkeletonPromise',
         value: function findContactsBySkeletonPromise(contactSkeleton) {
             var operator = arguments.length <= 1 || arguments[1] === undefined ? 'AND' : arguments[1];
@@ -127,30 +277,13 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
             var adapterInstance = this;
             var queryString = "select * from Contacts where " + VTigerCrmAdapter.contactSkeletonToWhere(contactSkeleton, operator) + ";";
 
-            return adapterInstance.loginPromise().then(function (sessionHandle) {
-                adapterInstance.sessionToken = sessionHandle;
-            }).then(function () {
-                return adapterInstance.queryPromise(queryString);
+            return adapterInstance._loginPromise().then(function (sessionToken) {
+                return adapterInstance._queryPromise(sessionToken, queryString);
             });
         } //findContactsBySkeletonPromise
 
-    }, {
-        key: 'findContactsFulltextPromise',
-        value: function findContactsFulltextPromise(text) {
-            var contactSkeleton = {
-                lastname: text,
-                firstname: text,
-                email: text
-            };
+        // ------------------------------------------------- static helpers ----------------------------------------------------
 
-            return this.findContactsBySkeletonPromise(contactSkeleton, 'OR');
-        } //findContactsFulltextPromise
-
-    }, {
-        key: 'findContactById',
-        value: function findContactById(contactId) {
-            return this.findContactsBySkeletonPromise({ id: contactId });
-        }
     }], [{
         key: 'contactSkeletonToWhere',
         value: function contactSkeletonToWhere(contact, operator) {

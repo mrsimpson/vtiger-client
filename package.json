@@ -1,6 +1,6 @@
 {
   "name": "vtiger-client",
-  "version": "0.2",
+  "version": "0.5.0",
   "description": "Consumer for vTiger CRM based on swagger-API",
   "license": "Apache-2.0",
   "main": "dist/VTigerCrmAdapter.js",

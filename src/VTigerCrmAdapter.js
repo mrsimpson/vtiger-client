@@ -4,6 +4,8 @@
 const VTigerCrm = require('./vtiger_consumer_swagger/src/'); // See note below*.
 const CryptoJS = require('crypto-js');
 
+const ELEMENT_TYPE_CONTACT = 'Contacts';
+
 export class VTigerCrmAdapterException extends Error{
     constructor(operation, message, previous){
         super(message);
@@ -14,30 +16,75 @@ export class VTigerCrmAdapterException extends Error{
 
 export class VTigerCrmAdapter {
 
+// ------------------------------------------------ public methods ----------------------------------------------------
     constructor(basePath, username, accesskey) {
 
         this.username = username;
         this.accesskey = accesskey;
         this.sessionToken = '';
+        this.assigned_user_id = "19x5";
 
         this.vTigerApi = new VTigerCrm.DefaultApi(); // Allocate the API class we're going to use.
         this.vTigerApi.apiClient.basePath = basePath;
 
-/*          We can't login in the constructor as a consumer might immediately issue a subsequent request.
-            Thus, all the resolvers of the login-Promise need to buffer the result in order to take advantage of existing
-            session tokens
+        /*          We can't login in the constructor as a consumer might immediately issue a subsequent request.
+         Thus, all the resolvers of the login-Promise need to buffer the result in order to take advantage of existing
+         session tokens
 
-            this.loginPromise(this.username, this.accessKey)
-            .then((result)=>{
-                this.sessionToken = result
-            })
-            .catch((err)=>{
-                console.error(err.operation, err.message, err.previous.toString());
-                throw err;
-            });*/
+         this._loginPromise(this.username, this.accessKey)
+         .then((result)=>{
+         this.sessionToken = result
+         })
+         .catch((err)=>{
+         console.error(err.operation, err.message, err.previous.toString());
+         throw err;
+         });*/
     }
 
-    loginPromise() {
+    findContactsFulltextPromise(text){
+        const contactSkeleton = {
+            lastname: text,
+            firstname: text,
+            email: text
+        };
+
+        return this.findContactsBySkeletonPromise(contactSkeleton, 'OR');
+    } //findContactsFulltextPromise
+
+    createContactPromise(contact){
+        const adapterInstance = this;
+        contact.assigned_user_id = this.assigned_user_id;
+        return adapterInstance._loginPromise().then((sessionToken)=>adapterInstance._createPromise(sessionToken, ELEMENT_TYPE_CONTACT, contact));
+    }
+
+    retrievePromise(contactId){
+        const adapterInstance = this;
+        return adapterInstance._loginPromise().then((sessionToken)=>adapterInstance._retrievePromise(sessionToken, contactId));
+    }
+
+    updatePromise(contact){
+        const adapterInstance = this;
+        return adapterInstance._loginPromise().then((sessionToken)=>adapterInstance._updatePromise(sessionToken, contact));
+    }
+
+    deletePromise(contactId){
+        const adapterInstance = this;
+        return adapterInstance._loginPromise().then((sessionToken)=>adapterInstance._deletePromise(sessionToken, contactId));
+    }
+
+//-------------------------------------------------- private methods ---------------------------------------------------
+    /**
+     * All services offered by vTiger require authorization to be done prior to the webservice-call.
+     * As everything is done asynchronously, the login-promise needs to be resolved before continuing resolving the
+     * actual webservice-promise. Thus, the autorization-rensitive-methods (starting with _) are encapsulated again in a
+     * public method which chains the execution.
+     * Still, the login-method bufferss the result on resolution so that - although the promise is chained as pre-
+     * decessor, the webservices used for authorization are not executed anymore.
+     * It seems as if the sessionToken had an unlimited lifetime.
+     * @returns {Promise}
+     * @private
+     */
+    _loginPromise() {
         const adapterInstance = this;
         return new Promise((resolve, reject)=>{
             if (adapterInstance.sessionToken){ resolve(adapterInstance.sessionToken) } else {
@@ -62,30 +109,25 @@ export class VTigerCrmAdapter {
                         }
 
                         console.log('SESSION_TOKEN', response.body.result.sessionName);
+                        adapterInstance.sessionToken = response.body.result.sessionName;
                         resolve(response.body.result.sessionName);
 
                     }); //operationLoginPost
                 }); //operationChallengeGet
             }})
-    }//loginPromise
+    }//_loginPromise
 
-    static contactSkeletonToWhere(contact, operator){
-        let whereClause = '';
-        for(let key in contact){
-            if (contact.hasOwnProperty(key)){
-                if (whereClause) whereClause += ' ' + operator + ' ';
-                whereClause += key + " LIKE '" + contact[key] + "'";
-            }
-        }
-        return whereClause;
-    }
+    _queryPromise(sessionToken, queryString){
+        /**
+         * Promises a query result.
+         * @type {VTigerCrmAdapter}
+         */
 
-    queryPromise(queryString){
-        const adapterInstance = this;
+        const  adapterInstance = this;
 
         return new Promise((resolve, reject)=>{
-            if (!adapterInstance.sessionToken) reject(new VTigerCrmAdapterException('QUERY', 'No session token for query'));
-            adapterInstance.vTigerApi.operationqueryGet( adapterInstance.sessionToken, queryString, (err, data, response)=>{
+            if (!sessionToken) reject(new VTigerCrmAdapterException('QUERY', 'No session token for query'));
+            adapterInstance.vTigerApi.operationqueryGet( sessionToken, queryString, (err, data, response)=>{
                 if (err) {
                     return reject( new VTigerCrmAdapterException( 'QUERY', 'Couldn\'t execute webservice:', err ));
                 }
@@ -99,6 +141,79 @@ export class VTigerCrmAdapter {
         })
     }
 
+    _createPromise(sessionToken, objectType, object) {
+        const adapterInstance = this;
+        return new Promise((resolve, reject)=>{
+            if (!sessionToken) return reject(new VTigerCrmAdapterException('CREATE', 'No session token for creation'));
+            adapterInstance.vTigerApi.operationcreatePost( sessionToken, objectType, JSON.stringify(object), (err, data, response)=>{
+                if (err) {
+                    return reject( new VTigerCrmAdapterException( 'CREATE', 'Couldn\'t execute webservice:', err ));
+                }
+
+                if (!response.body.success) {
+                    return reject( new VTigerCrmAdapterException( 'CREATE', 'Couldn\'t create:', response.body.error.message));
+                }
+
+                resolve(response.body.result); //might be initial
+            })
+        })
+    } //_createPromise
+    
+    _retrievePromise(sessionToken, id){
+        const adapterInstance = this;
+        return new Promise((resolve, reject)=>{
+            if (!sessionToken) return reject(new VTigerCrmAdapterException('RETRIEVE', 'No session token for retrieval'));
+            adapterInstance.vTigerApi.operationretrieveGet( sessionToken, id, (err, data, response)=>{
+                if (err) {
+                    return reject( new VTigerCrmAdapterException( 'RETRIEVE', 'Couldn\'t execute webservice:', err ));
+                }
+
+                if (!response.body.success) {
+                    return reject( new VTigerCrmAdapterException( 'RETRIEVE', 'Couldn\'t retrieve:', response.body.error.message));
+                }
+
+                resolve(response.body.result); //might be initial
+            })
+        })
+    } //_retrievePromise
+
+    _updatePromise(sessionToken, object) {
+        const adapterInstance = this;
+        return new Promise((resolve, reject)=>{
+            if (!sessionToken) return reject(new VTigerCrmAdapterException('UPDATE', 'No session token for update'));
+            adapterInstance.vTigerApi.operationupdatePost( sessionToken, JSON.stringify(object), (err, data, response)=>{
+                if (err) {
+                    return reject( new VTigerCrmAdapterException( 'UPDATE', 'Couldn\'t execute webservice:', err ));
+                }
+
+                if (!response.body.success) {
+                    return reject( new VTigerCrmAdapterException( 'UPDATE', 'Couldn\'t update:', response.body.error.message));
+                }
+
+                resolve(response.body.result); //might be initial
+            })
+        })
+    } //_updatePromise
+
+    _deletePromise(sessionToken, id) {
+        const adapterInstance = this;
+        return new Promise((resolve, reject)=>{
+            if (!sessionToken) return reject(new VTigerCrmAdapterException('DELETE', 'No session token for delete'));
+            adapterInstance.vTigerApi.operationdeletePost( sessionToken, id, (err, data, response)=>{
+                if (err) {
+                    return reject( new VTigerCrmAdapterException( 'DELETE', 'Couldn\'t execute webservice:', err ));
+                }
+
+                if (!response.body.success) {
+                    return reject( new VTigerCrmAdapterException( 'DELETE', 'Couldn\'t delete:', response.body.error.message));
+                }
+
+                resolve(response.body.success); //might be initial
+            })
+        })
+    } //_deletePromise
+
+
     findContactsBySkeletonPromise(contactSkeleton, operator='AND'){
         /**
          * Operator defines how the properties of the contact skeleton are to be combined.
@@ -107,24 +222,18 @@ export class VTigerCrmAdapter {
         const adapterInstance = this;
         const queryString = "select * from Contacts where " + VTigerCrmAdapter.contactSkeletonToWhere(contactSkeleton, operator) + ";";
 
-        return adapterInstance.loginPromise()
-                .then((sessionHandle)=>{
-                    adapterInstance.sessionToken = sessionHandle;
-                })
-                .then( ()=>{ return adapterInstance.queryPromise(queryString)});
+        return adapterInstance._loginPromise().then((sessionToken)=>adapterInstance._queryPromise(sessionToken, queryString));
     } //findContactsBySkeletonPromise
 
-    findContactsFulltextPromise(text){
-        const contactSkeleton = {
-            lastname: text,
-            firstname: text,
-            email: text
-        };
-
-       return this.findContactsBySkeletonPromise(contactSkeleton, 'OR');
-    } //findContactsFulltextPromise
-
-    findContactById(contactId){
-        return this.findContactsBySkeletonPromise({ id: contactId });
+// ------------------------------------------------- static helpers ----------------------------------------------------
+    static contactSkeletonToWhere(contact, operator){
+        let whereClause = '';
+        for(let key in contact){
+            if (contact.hasOwnProperty(key)){
+                if (whereClause) whereClause += ' ' + operator + ' ';
+                whereClause += key + " LIKE '" + contact[key] + "'";
+            }
+        }
+        return whereClause;
     }
 }
