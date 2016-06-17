@@ -41,12 +41,15 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
     // ------------------------------------------------ public methods ----------------------------------------------------
 
     function VTigerCrmAdapter(basePath, username, accesskey) {
+        var logger = arguments.length <= 3 || arguments[3] === undefined ? console : arguments[3];
+
         _classCallCheck(this, VTigerCrmAdapter);
 
         this.username = username;
         this.accesskey = accesskey;
         this.sessionToken = '';
         this.assigned_user_id = "19x5";
+        this.logger = logger;
 
         this.vTigerApi = new VTigerCrm.DefaultApi(); // Allocate the API class we're going to use.
         this.vTigerApi.apiClient.basePath = basePath;
@@ -126,6 +129,8 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
     }, {
         key: '_loginPromise',
         value: function _loginPromise() {
+            var _this2 = this;
+
             var adapterInstance = this;
             return new Promise(function (resolve, reject) {
                 if (adapterInstance.sessionToken) {
@@ -140,7 +145,7 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
                         }
 
                         var challengeToken = response.body.result.token;
-                        console.log('CHALLENGE_TOKEN', challengeToken);
+                        _this2.logger.log('CHALLENGE_TOKEN', challengeToken);
 
                         adapterInstance.vTigerApi.operationloginPost(adapterInstance.username, CryptoJS.MD5(challengeToken + adapterInstance.accesskey).toString(), function (err, data, response) {
                             if (err) {
@@ -151,7 +156,7 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
                                 return reject(new VTigerCrmAdapterException('LOGIN', 'Couldn\'t log in:', response.body.error.message));
                             }
 
-                            console.log('SESSION_TOKEN', response.body.result.sessionName);
+                            _this2.logger.log('SESSION_TOKEN', response.body.result.sessionName);
                             adapterInstance.sessionToken = response.body.result.sessionName;
                             resolve(response.body.result.sessionName);
                         }); //operationLoginPost
