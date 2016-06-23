@@ -21,18 +21,20 @@
   /**
    * The Element model module.
    * @module model/Element
-   * @version 0.0.1
+   * @version 0.0.2
    */
 
   /**
    * Constructs a new <code>Element</code>.
-   * An instance of a module (aka \&quot;elementType\&quot;) encoded as String
+   * An instance of a module (aka \&quot;elementType\&quot;) encoded as JSON
    * @alias module:model/Element
    * @class
+   * @extends Object
    */
   var exports = function() {
     var _this = this;
 
+    return _this;
   };
 
   /**
@@ -45,6 +47,7 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
+      ApiClient.constructFromObject(data, obj, String);
 
     }
     return obj;

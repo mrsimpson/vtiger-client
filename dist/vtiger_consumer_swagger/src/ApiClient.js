@@ -21,7 +21,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
   /**
    * @module ApiClient
-   * @version 0.0.1
+   * @version 0.0.2
    */
 
   /**

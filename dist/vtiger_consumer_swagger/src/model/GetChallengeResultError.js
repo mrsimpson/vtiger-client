@@ -14,46 +14,59 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     if (!root.VTigerCrm) {
       root.VTigerCrm = {};
     }
-    root.VTigerCrm.Element = factory(root.VTigerCrm.ApiClient);
+    root.VTigerCrm.GetChallengeResultError = factory(root.VTigerCrm.ApiClient);
   }
 })(undefined, function (ApiClient) {
   'use strict';
 
   /**
-   * The Element model module.
-   * @module model/Element
+   * The GetChallengeResultError model module.
+   * @module model/GetChallengeResultError
    * @version 0.0.2
    */
 
   /**
-   * Constructs a new <code>Element</code>.
-   * An instance of a module (aka \&quot;elementType\&quot;) encoded as JSON
-   * @alias module:model/Element
+   * Constructs a new <code>GetChallengeResultError</code>.
+   * @alias module:model/GetChallengeResultError
    * @class
-   * @extends Object
    */
 
   var exports = function exports() {
     var _this = this;
-
-    return _this;
   };
 
   /**
-   * Constructs a <code>Element</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>GetChallengeResultError</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/Element} obj Optional instance to populate.
-   * @return {module:model/Element} The populated <code>Element</code> instance.
+   * @param {module:model/GetChallengeResultError} obj Optional instance to populate.
+   * @return {module:model/GetChallengeResultError} The populated <code>GetChallengeResultError</code> instance.
    */
   exports.constructFromObject = function (data, obj) {
     if (data) {
       obj = obj || new exports();
-      ApiClient.constructFromObject(data, obj, String);
+
+      if (data.hasOwnProperty('code')) {
+        obj['code'] = ApiClient.convertToType(data['code'], 'String');
+      }
+      if (data.hasOwnProperty('message')) {
+        obj['message'] = ApiClient.convertToType(data['message'], 'String');
+      }
     }
     return obj;
   };
 
+  /**
+   * A technical language-independent expression of the error
+   * @member {String} code
+   */
+  exports.prototype['code'] = undefined;
+  /**
+   * A human-readable description of the error to be propagated to a UI
+   * @member {String} message
+   */
+  exports.prototype['message'] = undefined;
+
   return exports;
 });
-//# sourceMappingURL=Element.js.map
+//# sourceMappingURL=GetChallengeResultError.js.map

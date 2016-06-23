@@ -5,24 +5,24 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient'], factory);
+    define(['ApiClient', 'model/GetChallengeResultError', 'model/GetChallengeResultResult'], factory);
   } else if ((typeof module === 'undefined' ? 'undefined' : _typeof(module)) === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'));
+    module.exports = factory(require('../ApiClient'), require('./GetChallengeResultError'), require('./GetChallengeResultResult'));
   } else {
     // Browser globals (root is window)
     if (!root.VTigerCrm) {
       root.VTigerCrm = {};
     }
-    root.VTigerCrm.GetChallengeResult = factory(root.VTigerCrm.ApiClient);
+    root.VTigerCrm.GetChallengeResult = factory(root.VTigerCrm.ApiClient, root.VTigerCrm.GetChallengeResultError, root.VTigerCrm.GetChallengeResultResult);
   }
-})(undefined, function (ApiClient) {
+})(undefined, function (ApiClient, GetChallengeResultError, GetChallengeResultResult) {
   'use strict';
 
   /**
    * The GetChallengeResult model module.
    * @module model/GetChallengeResult
-   * @version 0.0.1
+   * @version 0.0.2
    */
 
   /**
@@ -46,34 +46,32 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     if (data) {
       obj = obj || new exports();
 
-      if (data.hasOwnProperty('token')) {
-        obj['token'] = ApiClient.convertToType(data['token'], 'String');
+      if (data.hasOwnProperty('success')) {
+        obj['success'] = ApiClient.convertToType(data['success'], 'Boolean');
       }
-      if (data.hasOwnProperty('serverTime')) {
-        obj['serverTime'] = ApiClient.convertToType(data['serverTime'], 'String');
+      if (data.hasOwnProperty('error')) {
+        obj['error'] = GetChallengeResultError.constructFromObject(data['error']);
       }
-      if (data.hasOwnProperty('expireTime')) {
-        obj['expireTime'] = ApiClient.convertToType(data['expireTime'], 'String');
+      if (data.hasOwnProperty('result')) {
+        obj['result'] = GetChallengeResultResult.constructFromObject(data['result']);
       }
     }
     return obj;
   };
 
   /**
-   * Challenge token from the server
-   * @member {String} token
+   * Indicates the webservice being processed successfully on the server
+   * @member {Boolean} success
    */
-  exports.prototype['token'] = undefined;
+  exports.prototype['success'] = undefined;
   /**
-   * The current server time
-   * @member {String} serverTime
+   * @member {module:model/GetChallengeResultError} error
    */
-  exports.prototype['serverTime'] = undefined;
+  exports.prototype['error'] = undefined;
   /**
-   * The time when the token expires
-   * @member {String} expireTime
+   * @member {module:model/GetChallengeResultResult} result
    */
-  exports.prototype['expireTime'] = undefined;
+  exports.prototype['result'] = undefined;
 
   return exports;
 });

@@ -1,12 +1,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CRUDResponse', 'model/Element', 'model/GetChallengeResult', 'model/LoginResult', 'api/DefaultApi'], factory);
+    define(['ApiClient', 'model/CRUDResponse', 'model/Element', 'model/GetChallengeResult', 'model/GetChallengeResultError', 'model/GetChallengeResultResult', 'model/LoginResult', 'model/LoginResultResult', 'model/QueryResponse', 'api/DefaultApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/CRUDResponse'), require('./model/Element'), require('./model/GetChallengeResult'), require('./model/LoginResult'), require('./api/DefaultApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/CRUDResponse'), require('./model/Element'), require('./model/GetChallengeResult'), require('./model/GetChallengeResultError'), require('./model/GetChallengeResultResult'), require('./model/LoginResult'), require('./model/LoginResultResult'), require('./model/QueryResponse'), require('./api/DefaultApi'));
   }
-}(function(ApiClient, CRUDResponse, Element, GetChallengeResult, LoginResult, DefaultApi) {
+}(function(ApiClient, CRUDResponse, Element, GetChallengeResult, GetChallengeResultError, GetChallengeResultResult, LoginResult, LoginResultResult, QueryResponse, DefaultApi) {
   'use strict';
 
   /**
@@ -38,7 +38,7 @@
    * </pre>
    * </p>
    * @module index
-   * @version 0.0.1
+   * @version 0.0.2
    */
   var exports = {
     /**
@@ -62,10 +62,30 @@
      */
     GetChallengeResult: GetChallengeResult,
     /**
+     * The GetChallengeResultError model constructor.
+     * @property {module:model/GetChallengeResultError}
+     */
+    GetChallengeResultError: GetChallengeResultError,
+    /**
+     * The GetChallengeResultResult model constructor.
+     * @property {module:model/GetChallengeResultResult}
+     */
+    GetChallengeResultResult: GetChallengeResultResult,
+    /**
      * The LoginResult model constructor.
      * @property {module:model/LoginResult}
      */
     LoginResult: LoginResult,
+    /**
+     * The LoginResultResult model constructor.
+     * @property {module:model/LoginResultResult}
+     */
+    LoginResultResult: LoginResultResult,
+    /**
+     * The QueryResponse model constructor.
+     * @property {module:model/QueryResponse}
+     */
+    QueryResponse: QueryResponse,
     /**
      * The DefaultApi service constructor.
      * @property {module:api/DefaultApi}

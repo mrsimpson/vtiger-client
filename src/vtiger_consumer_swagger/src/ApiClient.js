@@ -17,7 +17,7 @@
 
   /**
    * @module ApiClient
-   * @version 0.0.1
+   * @version 0.0.2
    */
 
   /**
@@ -332,33 +332,33 @@
       queryParams, headerParams, formParams, bodyParam, authNames, contentTypes, accepts,
       returnType, callback) {
 
-    //////////////////////////////////////////// Begin of modification /////////////////////////////////////////////////
-    // Modification of generated code by OJ: The vTiger-Endpoints are not compatible to the general way of restfully
-    // addressing a resource: they are services offered by an endpoint which encodes the operation. The operation is 
-    // the first query parameter of the endpoint. As swagger doesn't support query parameters as endpoint-components, 
-    // the YAML definition created includes the parameter as part of the path.
-    // In order to properly execute the HTTP-methods, we now need to re-create this part of the path as query parameter
-    var effectivePath = path;
-    var effectiveQueryParams = queryParams;
-    
-    var posQuestionMark = path.search("\\?");
-    if( posQuestionMark !== -1 ){
-      var paramKeyValue = effectivePath.substring(posQuestionMark + 1).split("=");
-      effectiveQueryParams[paramKeyValue[0]] = paramKeyValue[1];
-      effectivePath = effectivePath.substring(0, posQuestionMark );
-    }
-        
-    var _this = this;
-    var url = this.buildUrl(effectivePath, pathParams);
-    var request = superagent(httpMethod, url);
+      //////////////////////////////////////////// Begin of modification /////////////////////////////////////////////////
+      // Modification of generated code by OJ: The vTiger-Endpoints are not compatible to the general way of restfully
+      // addressing a resource: they are services offered by an endpoint which encodes the operation. The operation is
+      // the first query parameter of the endpoint. As swagger doesn't support query parameters as endpoint-components,
+      // the YAML definition created includes the parameter as part of the path.
+      // In order to properly execute the HTTP-methods, we now need to re-create this part of the path as query parameter
+      var effectivePath = path;
+      var effectiveQueryParams = queryParams;
 
-    // apply authentications
-    this.applyAuthToRequest(request, authNames);
+      var posQuestionMark = path.search("\\?");
+      if (posQuestionMark !== -1) {
+          var paramKeyValue = effectivePath.substring(posQuestionMark + 1).split("=");
+          effectiveQueryParams[paramKeyValue[0]] = paramKeyValue[1];
+          effectivePath = effectivePath.substring(0, posQuestionMark);
+      }
 
-    // set query parameters
-    request.query(this.normalizeParams(effectiveQueryParams));
+      var _this = this;
+      var url = this.buildUrl(effectivePath, pathParams);
+      var request = superagent(httpMethod, url);
 
-    ////////////////////////////////////////////// End of modification /////////////////////////////////////////////////
+      // apply authentications
+      this.applyAuthToRequest(request, authNames);
+
+      // set query parameters
+      request.query(this.normalizeParams(effectiveQueryParams));
+
+      ////////////////////////////////////////////// End of modification /////////////////////////////////////////////////
 
     // set header parameters
     request.set(this.defaultHeaders).set(this.normalizeParams(headerParams));

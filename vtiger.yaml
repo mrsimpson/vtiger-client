@@ -1,0 +1,297 @@
+swagger: '2.0'
+info:
+  version: 0.1.0
+  title: vTiger CRM
+  description: |
+    Interaction with customer master-data
+host: localhost
+basePath: /vtigercrm_dbd/webservice.php
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /?operation=getchallenge:
+    get:
+      parameters:
+        - $ref: "#/parameters/userQuery"
+      responses:
+        200:
+          description: Challenge successful
+          schema:
+              $ref: '#/definitions/GetChallengeResult'
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+  /?operation=login:
+    post:
+      parameters:
+        - $ref: "#/parameters/userForm"
+        - $ref: "#/parameters/accessKey"
+      responses:
+        200:
+          description: Login successful
+          schema:
+            $ref: "#/definitions/LoginResult"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not Found"
+  /?operation=listtypes:
+    get:
+      parameters:
+        - $ref: "#/parameters/sessionQuery"
+      responses:
+        200:
+          description: "OK"
+  /?operation=describe:
+    get:
+      parameters:
+        - $ref: "#/parameters/sessionQuery"
+      responses:
+        200:
+          description: "OK"
+  /?operation=query:
+     get:
+      parameters:
+        - $ref: "#/parameters/sessionQuery"
+        - name: query
+          in: query
+          description: Query string "select * | <column_list> | <count(*)> from <object> [where <conditionals>] [order by <column_list>] [limit [<m>, ]<n>]"
+          type: string
+          required: true
+      responses:
+        200:
+          description: "OK"   
+          # schema:
+          #   $ref: "#/definitions/Query_Response"
+  /?operation=create:
+    post:
+      parameters:
+        - $ref: "#/parameters/session"
+        - $ref: "#/parameters/elementType"
+        - $ref: "#/parameters/element"
+      responses:
+        200:
+          description: "OK. Update may be deferred"
+          # schema:
+          #   $ref: "#/definitions/CRUD_Response"
+        201:
+          description: "Updated"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not Found"
+  /?operation=retrieve:
+    get:
+      parameters:
+        - $ref: "#/parameters/sessionQuery"
+        - name: id
+          in: query
+          description: Identifier of the vTiger object instance
+          type: string
+          required: true
+      responses:
+        200:
+          description: "OK"  
+          # schema:
+          #   $ref: "#/definitions/CRUD_Response"
+        404:
+          description: "Not found"
+  /?operation=update:
+    post:
+      parameters:
+        - $ref: "#/parameters/session"
+        - $ref: "#/parameters/element"
+      responses:
+        200:
+          description: "OK. Update may be deferred"
+          # schema:
+          #   $ref: "#/definitions/CRUD_Response"
+        201:
+          description: "Updated"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not Found"
+  /?operation=delete:
+    post:
+      parameters:
+        - $ref: "#/parameters/session"
+        - name: id
+          in: formData
+          description: Identifier of the vTiger object instance
+          type: string
+          required: true
+      responses:
+        200:
+          description: "OK. Update may be deferred"
+          # schema:
+          #   $ref: "#/definitions/CRUD_Response"
+        201:
+          description: "Updated"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not Found"
+parameters:
+  userQuery:
+    name: username
+    in: query
+    description: username used for the interaction
+    type: string
+    required: true
+  sessionQuery:
+    name: sessionName
+    in: query
+    description: Session handle retrieved in login
+    type: string
+    required: true
+  session:
+    name: sessionName
+    in: formData
+    description: Session handle retrieved in login
+    type: string
+    required: true
+  elementType:
+    name: elementType
+    in: formData
+    description: The model of the instance to be addressed
+    type: string
+    required: true
+    enum:
+      - Accounts
+      - Contacts
+  element:
+    name: element
+    type: string
+    description: An instance of a module (aka "elementType") encoded as String
+    in: formData
+    required: true
+  accessKey:
+    name: accessKey
+    in: formData
+    description: MD5 hash of concatenation <challengeToken>.<userAccessKey>
+    required: true
+    type: string
+  userForm:
+    name: username
+    in: formData
+    description: username used for the interaction
+    type: string
+    required: true
+definitions:
+  Element:
+    type: object
+    required:
+      -id
+    properties:
+      id:
+        type: string
+    additionalProperties:
+      type: string
+    description: An instance of a module (aka "elementType") encoded as JSON
+  GetChallengeResult:
+    type: object
+    properties:
+      success: 
+        type: boolean
+        description: Indicates the webservice being processed successfully on the server
+      error:
+        type: object
+        properties:
+          code:
+            type: string
+            description: A technical language-independent expression of the error
+          message:
+            type: string
+            description: A human-readable description of the error to be propagated to a UI
+      result:
+        type: object
+        properties: 
+          token: 
+            type: string
+            description: Challenge token from the server
+          serverTime:
+            type: string
+            description: The current server time
+          expireTime:
+            type: string
+            description: The time when the token expires
+  LoginResult:
+    type: object
+    properties:
+      success: 
+        type: boolean
+        description: Indicates the webservice being processed successfully on the server
+      error:
+        type: object
+        properties:
+          code:
+            type: string
+            description: A technical language-independent expression of the error
+          message:
+            type: string
+            description: A human-readable description of the error to be propagated to a UI
+      result:
+        type: object
+        properties:
+          sessionName: 
+            type: string
+            description: Unique Identifier for the session
+          userId:
+            type: string 
+            description: The vtiger id for the logged in user
+          version: 
+            type: string 
+            description: The version of the webservices api
+          vtigerVersion: 
+            type: string 
+            description: The version of the vtiger crm
+  CRUD_Response:
+    type: object
+    properties:
+      success: 
+        type: boolean
+        description: Indicates the webservice being processed successfully on the server
+      error:
+        type: object
+        properties:
+          code:
+            type: string
+            description: A technical language-independent expression of the error
+          message:
+            type: string
+            description: A human-readable description of the error to be propagated to a UI
+      result:
+        $ref: "#/definitions/Element"
+  Query_Response:
+    type: object
+    properties:
+      success: 
+        type: boolean
+        description: Indicates the webservice being processed successfully on the server
+      error:
+        type: object
+        properties:
+          code:
+            type: string
+            description: A technical language-independent expression of the error
+          message:
+            type: string
+            description: A human-readable description of the error to be propagated to a UI
+      result:
+        type: array
+        items:
+          $ref: "#/definitions/Element"

@@ -5,24 +5,24 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient'], factory);
+    define(['ApiClient', 'model/GetChallengeResultError', 'model/LoginResultResult'], factory);
   } else if ((typeof module === 'undefined' ? 'undefined' : _typeof(module)) === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'));
+    module.exports = factory(require('../ApiClient'), require('./GetChallengeResultError'), require('./LoginResultResult'));
   } else {
     // Browser globals (root is window)
     if (!root.VTigerCrm) {
       root.VTigerCrm = {};
     }
-    root.VTigerCrm.LoginResult = factory(root.VTigerCrm.ApiClient);
+    root.VTigerCrm.LoginResult = factory(root.VTigerCrm.ApiClient, root.VTigerCrm.GetChallengeResultError, root.VTigerCrm.LoginResultResult);
   }
-})(undefined, function (ApiClient) {
+})(undefined, function (ApiClient, GetChallengeResultError, LoginResultResult) {
   'use strict';
 
   /**
    * The LoginResult model module.
    * @module model/LoginResult
-   * @version 0.0.1
+   * @version 0.0.2
    */
 
   /**
@@ -46,42 +46,32 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     if (data) {
       obj = obj || new exports();
 
-      if (data.hasOwnProperty('sessionId')) {
-        obj['sessionId'] = ApiClient.convertToType(data['sessionId'], 'String');
+      if (data.hasOwnProperty('success')) {
+        obj['success'] = ApiClient.convertToType(data['success'], 'Boolean');
       }
-      if (data.hasOwnProperty('userId')) {
-        obj['userId'] = ApiClient.convertToType(data['userId'], 'String');
+      if (data.hasOwnProperty('error')) {
+        obj['error'] = GetChallengeResultError.constructFromObject(data['error']);
       }
-      if (data.hasOwnProperty('version')) {
-        obj['version'] = ApiClient.convertToType(data['version'], 'String');
-      }
-      if (data.hasOwnProperty('vtigerVersion')) {
-        obj['vtigerVersion'] = ApiClient.convertToType(data['vtigerVersion'], 'String');
+      if (data.hasOwnProperty('result')) {
+        obj['result'] = LoginResultResult.constructFromObject(data['result']);
       }
     }
     return obj;
   };
 
   /**
-   * Unique Identifier for the session
-   * @member {String} sessionId
+   * Indicates the webservice being processed successfully on the server
+   * @member {Boolean} success
    */
-  exports.prototype['sessionId'] = undefined;
+  exports.prototype['success'] = undefined;
   /**
-   * The vtiger id for the logged in user
-   * @member {String} userId
+   * @member {module:model/GetChallengeResultError} error
    */
-  exports.prototype['userId'] = undefined;
+  exports.prototype['error'] = undefined;
   /**
-   * The version of the webservices api
-   * @member {String} version
+   * @member {module:model/LoginResultResult} result
    */
-  exports.prototype['version'] = undefined;
-  /**
-   * The version of the vtiger crm
-   * @member {String} vtigerVersion
-   */
-  exports.prototype['vtigerVersion'] = undefined;
+  exports.prototype['result'] = undefined;
 
   return exports;
 });
