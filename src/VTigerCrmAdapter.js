@@ -22,7 +22,7 @@ export class VTigerCrmAdapter {
         this.username = username;
         this.accesskey = accesskey;
         this.sessionToken = '';
-        this.assigned_user_id = assigned_user_id
+        this.assigned_user_id = assigned_user_id;
         this.logger = logger;
 
         this.vTigerApi = new VTigerCrm.DefaultApi(); // Allocate the API class we're going to use.
@@ -97,11 +97,10 @@ export class VTigerCrmAdapter {
                         return reject(new VTigerCrmAdapterException('GET_CHALLENGE', "Couldn't execute webservice:", err));
                     }
                     if (!response.body.success) {
-                        return reject(new VTigerCrmAdapterException('GET_CHALLENGE', "Couldn't receive challenge - possible wrong server configuration"));
+                        return reject(new VTigerCrmAdapterException('GET_CHALLENGE', "Couldn't receive challenge - possibly wrong server configuration"));
                     }
 
                     const challengeToken = response.body.result.token;
-                    this.logger.log('CHALLENGE_TOKEN', challengeToken);
 
                     adapterInstance.vTigerApi.operationloginPost(adapterInstance.username, CryptoJS.MD5(challengeToken + adapterInstance.accesskey).toString(), (err, data, response)=> {
                         if (err) {
@@ -112,7 +111,6 @@ export class VTigerCrmAdapter {
                             return reject(new VTigerCrmAdapterException('LOGIN', "Couldn't log in:", response.body.error.message));
                         }
 
-                        this.logger.log('SESSION_TOKEN', response.body.result.sessionName);
                         adapterInstance.sessionToken = response.body.result.sessionName;
                         resolve(response.body.result.sessionName);
 

@@ -129,8 +129,6 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
     }, {
         key: '_loginPromise',
         value: function _loginPromise() {
-            var _this2 = this;
-
             var adapterInstance = this;
             return new Promise(function (resolve, reject) {
                 if (adapterInstance.sessionToken) {
@@ -141,11 +139,10 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
                             return reject(new VTigerCrmAdapterException('GET_CHALLENGE', "Couldn't execute webservice:", err));
                         }
                         if (!response.body.success) {
-                            return reject(new VTigerCrmAdapterException('GET_CHALLENGE', "Couldn't receive challenge - possible wrong server configuration"));
+                            return reject(new VTigerCrmAdapterException('GET_CHALLENGE', "Couldn't receive challenge - possibly wrong server configuration"));
                         }
 
                         var challengeToken = response.body.result.token;
-                        _this2.logger.log('CHALLENGE_TOKEN', challengeToken);
 
                         adapterInstance.vTigerApi.operationloginPost(adapterInstance.username, CryptoJS.MD5(challengeToken + adapterInstance.accesskey).toString(), function (err, data, response) {
                             if (err) {
@@ -156,7 +153,6 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
                                 return reject(new VTigerCrmAdapterException('LOGIN', "Couldn't log in:", response.body.error.message));
                             }
 
-                            _this2.logger.log('SESSION_TOKEN', response.body.result.sessionName);
                             adapterInstance.sessionToken = response.body.result.sessionName;
                             resolve(response.body.result.sessionName);
                         }); //operationLoginPost
