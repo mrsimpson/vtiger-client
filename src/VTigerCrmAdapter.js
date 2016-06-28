@@ -58,6 +58,12 @@ export class VTigerCrmAdapter {
         return adapterInstance._loginPromise().then((sessionToken)=>adapterInstance._createPromise(sessionToken, ELEMENT_TYPE_CONTACT, contact));
     }
 
+    createContactWithMessagePromise(contact, message) {
+        const adapterInstance = this;
+        contact.assigned_user_id = this.assigned_user_id;
+        return adapterInstance._loginPromise().then((sessionToken)=>adapterInstance._createContactWithMessagePromise(sessionToken, contact, message));
+    }
+
     retrievePromise(id) {
         const adapterInstance = this;
         return adapterInstance._loginPromise().then((sessionToken)=>adapterInstance._retrievePromise(sessionToken, id));
@@ -162,6 +168,24 @@ export class VTigerCrmAdapter {
                 }
 
                 resolve(response.body.result); //might be initial
+            })
+        })
+    } //_createPromise
+
+    _createContactWithMessagePromise(sessionToken, contact, message) {
+        const adapterInstance = this;
+        return new Promise((resolve, reject)=> {
+            if (!sessionToken) return reject(new VTigerCrmAdapterException('CREATE', 'No session token for creation'));
+            adapterInstance.vTigerApi.operationcreateContactPost(sessionToken, JSON.stringify(contact), message, (err, data, response)=> {
+                if (err) {
+                    return reject(new VTigerCrmAdapterException('CREATE CONTACT WITH MESSAGE', "Couldn't execute webservice:", err));
+                }
+
+                if (!response.body.success) {
+                    return reject(new VTigerCrmAdapterException('CREATE CONTACT WITH MESSAGE', "Couldn't create:", response.body.error.message));
+                }
+
+                resolve({ createdContact: JSON.parse(response.body.result.contact), messages: response.body.result.messages }); //might be initial
             })
         })
     } //_createPromise

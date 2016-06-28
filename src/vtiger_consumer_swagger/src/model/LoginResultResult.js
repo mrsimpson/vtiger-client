@@ -7,10 +7,10 @@
     module.exports = factory(require('../ApiClient'));
   } else {
     // Browser globals (root is window)
-    if (!root.VTigerCrm) {
-      root.VTigerCrm = {};
+    if (!root.CompactCrmDbDialog) {
+      root.CompactCrmDbDialog = {};
     }
-    root.VTigerCrm.LoginResultResult = factory(root.VTigerCrm.ApiClient);
+    root.CompactCrmDbDialog.LoginResultResult = factory(root.CompactCrmDbDialog.ApiClient);
   }
 }(this, function(ApiClient) {
   'use strict';
@@ -21,7 +21,7 @@
   /**
    * The LoginResultResult model module.
    * @module model/LoginResultResult
-   * @version 0.0.2
+   * @version 0.1.1
    */
 
   /**

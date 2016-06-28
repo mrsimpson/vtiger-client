@@ -7,17 +7,17 @@
     module.exports = factory(require('superagent'));
   } else {
     // Browser globals (root is window)
-    if (!root.VTigerCrm) {
-      root.VTigerCrm = {};
+    if (!root.CompactCrmDbDialog) {
+      root.CompactCrmDbDialog = {};
     }
-    root.VTigerCrm.ApiClient = factory(root.superagent);
+    root.CompactCrmDbDialog.ApiClient = factory(root.superagent);
   }
 }(this, function(superagent) {
   'use strict';
 
   /**
    * @module ApiClient
-   * @version 0.0.2
+   * @version 0.1.1
    */
 
   /**

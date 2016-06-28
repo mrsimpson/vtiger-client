@@ -1,15 +1,14 @@
 import {VTigerCrmAdapter} from './VTigerCrmAdapter.js';
-
-const USER_ACCESS_KEY = 'JkDMwItdgLaQGQdI';
+const USER_ACCESS_KEY = 'XMvugt2SH21gjEhG';
 const USERNAME = 'reisebuddy';
-const ASSIGNED_USER_ID = '19x5';
+const ASSIGNED_USER_ID = '19x78';
 
-const adapter = new VTigerCrmAdapter('http://localhost/vtigercrm/webservice.php', USERNAME, USER_ACCESS_KEY, ASSIGNED_USER_ID);
+const adapter = new VTigerCrmAdapter('http://localhost/vtigercrm_dbd/webservice.php', USERNAME, USER_ACCESS_KEY, ASSIGNED_USER_ID);/**/
 const random = 'unittest_' + Math.floor(Math.random()*100000);
 
 function teardown() {
     "use strict";
-    return adapter.findContactsBySkeletonPromise({email: '%'}).then((contacts)=> {
+    return adapter.findContactsBySkeletonPromise({email: 'unittest%'}).then((contacts)=> {
         if(Object.prototype.toString.call( contacts ) === '[object Array]') {
             Promise.all(contacts.map((contact)=>adapter.deletePromise(contact.id)));
         }
@@ -18,9 +17,10 @@ function teardown() {
 
 teardown() //start from scratch
     .then(()=> {
-        adapter.createContactPromise({firstname: random, lastname: random, email: random})
-            .then((createdContact)=> {
-                console.log('CREATED_CONTACT', createdContact.id);
+        adapter.createContactWithMessagePromise({firstname: random, lastname: random, email: random}, "Kampagnenname")
+            .then((result)=> {
+                console.log('CREATED_CONTACT', result.createdContact.id);
+                console.log('MESSAGES FROM CRM', JSON.stringify(result.messages));
                 adapter.retrievePromise(createdContact.id)
                     .then((contact)=> {
                         console.log('RETRIEVED_CONTACT', JSON.stringify(contact));
@@ -33,7 +33,7 @@ teardown() //start from scratch
                                 console.log('UPDATED_CONTACT', updatedContact);
                                 adapter.findContactsFulltextPromise('unittest_%', 10)
                                     .then((contacts)=> {
-                                        console.log('CONTACTS', contacts ? contacts.map(contact=>JSON.stringify(contact)) : '<none />');
+                                        console.log('CONTACTS', contacts ? contacts.map(contact=>JSON.stringify(contact, " ", 2)) : '<none />');
                                         if (contacts) {
                                             // adapter.deletePromise(contacts[0].id)
                                             //     .then(()=>console.log('DELETED_CONTACT'))

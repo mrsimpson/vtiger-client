@@ -11,10 +11,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     module.exports = factory(require('../ApiClient'));
   } else {
     // Browser globals (root is window)
-    if (!root.VTigerCrm) {
-      root.VTigerCrm = {};
+    if (!root.CompactCrmDbDialog) {
+      root.CompactCrmDbDialog = {};
     }
-    root.VTigerCrm.Element = factory(root.VTigerCrm.ApiClient);
+    root.CompactCrmDbDialog.Element = factory(root.CompactCrmDbDialog.ApiClient);
   }
 })(undefined, function (ApiClient) {
   'use strict';
@@ -22,7 +22,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   /**
    * The Element model module.
    * @module model/Element
-   * @version 0.0.2
+   * @version 0.1.1
    */
 
   /**

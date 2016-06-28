@@ -11,10 +11,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     module.exports = factory(require('../ApiClient'), require('./GetChallengeResultError'), require('./LoginResultResult'));
   } else {
     // Browser globals (root is window)
-    if (!root.VTigerCrm) {
-      root.VTigerCrm = {};
+    if (!root.CompactCrmDbDialog) {
+      root.CompactCrmDbDialog = {};
     }
-    root.VTigerCrm.LoginResult = factory(root.VTigerCrm.ApiClient, root.VTigerCrm.GetChallengeResultError, root.VTigerCrm.LoginResultResult);
+    root.CompactCrmDbDialog.LoginResult = factory(root.CompactCrmDbDialog.ApiClient, root.CompactCrmDbDialog.GetChallengeResultError, root.CompactCrmDbDialog.LoginResultResult);
   }
 })(undefined, function (ApiClient, GetChallengeResultError, LoginResultResult) {
   'use strict';
@@ -22,7 +22,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   /**
    * The LoginResult model module.
    * @module model/LoginResult
-   * @version 0.0.2
+   * @version 0.1.1
    */
 
   /**

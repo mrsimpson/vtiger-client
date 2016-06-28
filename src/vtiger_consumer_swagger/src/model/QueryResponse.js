@@ -7,10 +7,10 @@
     module.exports = factory(require('../ApiClient'), require('./Element'), require('./GetChallengeResultError'));
   } else {
     // Browser globals (root is window)
-    if (!root.VTigerCrm) {
-      root.VTigerCrm = {};
+    if (!root.CompactCrmDbDialog) {
+      root.CompactCrmDbDialog = {};
     }
-    root.VTigerCrm.QueryResponse = factory(root.VTigerCrm.ApiClient, root.VTigerCrm.Element, root.VTigerCrm.GetChallengeResultError);
+    root.CompactCrmDbDialog.QueryResponse = factory(root.CompactCrmDbDialog.ApiClient, root.CompactCrmDbDialog.Element, root.CompactCrmDbDialog.GetChallengeResultError);
   }
 }(this, function(ApiClient, Element, GetChallengeResultError) {
   'use strict';
@@ -21,7 +21,7 @@
   /**
    * The QueryResponse model module.
    * @module model/QueryResponse
-   * @version 0.0.2
+   * @version 0.1.1
    */
 
   /**

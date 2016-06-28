@@ -11,10 +11,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     module.exports = factory(require('../ApiClient'), require('./Element'), require('./GetChallengeResultError'));
   } else {
     // Browser globals (root is window)
-    if (!root.VTigerCrm) {
-      root.VTigerCrm = {};
+    if (!root.CompactCrmDbDialog) {
+      root.CompactCrmDbDialog = {};
     }
-    root.VTigerCrm.CRUDResponse = factory(root.VTigerCrm.ApiClient, root.VTigerCrm.Element, root.VTigerCrm.GetChallengeResultError);
+    root.CompactCrmDbDialog.CRUDResponse = factory(root.CompactCrmDbDialog.ApiClient, root.CompactCrmDbDialog.Element, root.CompactCrmDbDialog.GetChallengeResultError);
   }
 })(undefined, function (ApiClient, Element, GetChallengeResultError) {
   'use strict';
@@ -22,7 +22,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   /**
    * The CRUDResponse model module.
    * @module model/CRUDResponse
-   * @version 0.0.2
+   * @version 0.1.1
    */
 
   /**

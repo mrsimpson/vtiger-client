@@ -7,10 +7,10 @@
     module.exports = factory(require('../ApiClient'), require('../model/GetChallengeResult'), require('../model/LoginResult'));
   } else {
     // Browser globals (root is window)
-    if (!root.VTigerCrm) {
-      root.VTigerCrm = {};
+    if (!root.CompactCrmDbDialog) {
+      root.CompactCrmDbDialog = {};
     }
-    root.VTigerCrm.DefaultApi = factory(root.VTigerCrm.ApiClient, root.VTigerCrm.GetChallengeResult, root.VTigerCrm.LoginResult);
+    root.CompactCrmDbDialog.DefaultApi = factory(root.CompactCrmDbDialog.ApiClient, root.CompactCrmDbDialog.GetChallengeResult, root.CompactCrmDbDialog.LoginResult);
   }
 }(this, function(ApiClient, GetChallengeResult, LoginResult) {
   'use strict';
@@ -18,7 +18,7 @@
   /**
    * Default service.
    * @module api/DefaultApi
-   * @version 0.0.2
+   * @version 0.1.1
    */
 
   /**
@@ -31,6 +31,63 @@
   var exports = function(apiClient) {
     this.apiClient = apiClient || ApiClient.instance;
 
+
+    /**
+     * Callback function to receive the result of the operationcreateContactPost operation.
+     * @callback module:api/DefaultApi~operationcreateContactPostCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * @param {String} sessionName Session handle retrieved in login
+     * @param {String} cElement An instance of a module (aka \&quot;elementType\&quot;) encoded as String
+     * @param {String} message message used for the first contact (might contain a campaign)
+     * @param {module:api/DefaultApi~operationcreateContactPostCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.operationcreateContactPost = function(sessionName, cElement, message, callback) {
+      var postBody = null;
+
+      // verify the required parameter 'sessionName' is set
+      if (sessionName == undefined || sessionName == null) {
+        throw "Missing the required parameter 'sessionName' when calling operationcreateContactPost";
+      }
+
+      // verify the required parameter 'cElement' is set
+      if (cElement == undefined || cElement == null) {
+        throw "Missing the required parameter 'cElement' when calling operationcreateContactPost";
+      }
+
+      // verify the required parameter 'message' is set
+      if (message == undefined || message == null) {
+        throw "Missing the required parameter 'message' when calling operationcreateContactPost";
+      }
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+        'sessionName': sessionName,
+        'cElement': cElement,
+        'message': message
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/x-www-form-urlencoded'];
+      var accepts = ['application/json'];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/?operation=create_contact', 'POST',
+        pathParams, queryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
 
     /**
      * Callback function to receive the result of the operationcreatePost operation.

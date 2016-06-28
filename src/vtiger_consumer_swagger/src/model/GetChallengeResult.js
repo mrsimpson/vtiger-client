@@ -7,10 +7,10 @@
     module.exports = factory(require('../ApiClient'), require('./GetChallengeResultError'), require('./GetChallengeResultResult'));
   } else {
     // Browser globals (root is window)
-    if (!root.VTigerCrm) {
-      root.VTigerCrm = {};
+    if (!root.CompactCrmDbDialog) {
+      root.CompactCrmDbDialog = {};
     }
-    root.VTigerCrm.GetChallengeResult = factory(root.VTigerCrm.ApiClient, root.VTigerCrm.GetChallengeResultError, root.VTigerCrm.GetChallengeResultResult);
+    root.CompactCrmDbDialog.GetChallengeResult = factory(root.CompactCrmDbDialog.ApiClient, root.CompactCrmDbDialog.GetChallengeResultError, root.CompactCrmDbDialog.GetChallengeResultResult);
   }
 }(this, function(ApiClient, GetChallengeResultError, GetChallengeResultResult) {
   'use strict';
@@ -21,7 +21,7 @@
   /**
    * The GetChallengeResult model module.
    * @module model/GetChallengeResult
-   * @version 0.0.2
+   * @version 0.1.1
    */
 
   /**

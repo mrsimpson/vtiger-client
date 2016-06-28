@@ -89,6 +89,15 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
             });
         }
     }, {
+        key: 'createContactWithMessagePromise',
+        value: function createContactWithMessagePromise(contact, message) {
+            var adapterInstance = this;
+            contact.assigned_user_id = this.assigned_user_id;
+            return adapterInstance._loginPromise().then(function (sessionToken) {
+                return adapterInstance._createContactWithMessagePromise(sessionToken, contact, message);
+            });
+        }
+    }, {
         key: 'retrievePromise',
         value: function retrievePromise(id) {
             var adapterInstance = this;
@@ -207,6 +216,26 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
                     }
 
                     resolve(response.body.result); //might be initial
+                });
+            });
+        } //_createPromise
+
+    }, {
+        key: '_createContactWithMessagePromise',
+        value: function _createContactWithMessagePromise(sessionToken, contact, message) {
+            var adapterInstance = this;
+            return new Promise(function (resolve, reject) {
+                if (!sessionToken) return reject(new VTigerCrmAdapterException('CREATE', 'No session token for creation'));
+                adapterInstance.vTigerApi.operationcreateContactPost(sessionToken, JSON.stringify(contact), message, function (err, data, response) {
+                    if (err) {
+                        return reject(new VTigerCrmAdapterException('CREATE CONTACT WITH MESSAGE', "Couldn't execute webservice:", err));
+                    }
+
+                    if (!response.body.success) {
+                        return reject(new VTigerCrmAdapterException('CREATE CONTACT WITH MESSAGE', "Couldn't create:", response.body.error.message));
+                    }
+
+                    resolve({ createdContact: JSON.parse(response.body.result.contact), messages: response.body.result.messages }); //might be initial
                 });
             });
         } //_createPromise

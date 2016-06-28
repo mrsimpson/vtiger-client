@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
-  version: 0.1.0
-  title: vTiger CRM
+  version: 0.1.1
+  title: compact CRM DB Dialog
   description: |
     Interaction with customer master-data
 host: localhost
@@ -89,6 +89,25 @@ paths:
           description: "Forbidden"
         404:
           description: "Not Found"
+  /?operation=create_contact:
+    post:
+      parameters:
+        - $ref: "#/parameters/session"
+        - $ref: "#/parameters/contactElement"
+        - $ref: "#/parameters/messageForm"
+      responses:
+        200:
+          description: "OK. Update may be deferred"
+          # schema:
+          #   $ref: "#/definitions/Create_Contact_Response"
+        201:
+          description: "Updated"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Forbidden"
+        404:
+          description: "Not Found"
   /?operation=retrieve:
     get:
       parameters:
@@ -100,7 +119,7 @@ paths:
           required: true
       responses:
         200:
-          description: "OK"  
+          description: "OK"
           # schema:
           #   $ref: "#/definitions/CRUD_Response"
         404:
@@ -179,6 +198,12 @@ parameters:
     description: An instance of a module (aka "elementType") encoded as String
     in: formData
     required: true
+  contactElement:
+    name: cElement
+    type: string
+    description: An instance of a module (aka "elementType") encoded as String
+    in: formData
+    required: true
   accessKey:
     name: accessKey
     in: formData
@@ -191,21 +216,32 @@ parameters:
     description: username used for the interaction
     type: string
     required: true
+  messageForm:
+    name: message
+    in: formData
+    description: message used for the first contact (might contain a campaign)
+    type: string
+    required: true
 definitions:
   Element:
     type: object
-    required:
-      -id
-    properties:
-      id:
-        type: string
     additionalProperties:
       type: string
     description: An instance of a module (aka "elementType") encoded as JSON
+  ProcessingInstruction:
+    type: integer
+    description: Instruction how to handle a message passed during contact-creation
+    enum:
+      - 0
+        Automatic processing
+      - 1
+        Manual interaction required
+      - 2
+        Propagated error
   GetChallengeResult:
     type: object
     properties:
-      success: 
+      success:
         type: boolean
         description: Indicates the webservice being processed successfully on the server
       error:
@@ -219,8 +255,8 @@ definitions:
             description: A human-readable description of the error to be propagated to a UI
       result:
         type: object
-        properties: 
-          token: 
+        properties:
+          token:
             type: string
             description: Challenge token from the server
           serverTime:
@@ -232,7 +268,7 @@ definitions:
   LoginResult:
     type: object
     properties:
-      success: 
+      success:
         type: boolean
         description: Indicates the webservice being processed successfully on the server
       error:
@@ -247,22 +283,22 @@ definitions:
       result:
         type: object
         properties:
-          sessionName: 
+          sessionName:
             type: string
             description: Unique Identifier for the session
           userId:
-            type: string 
+            type: string
             description: The vtiger id for the logged in user
-          version: 
-            type: string 
+          version:
+            type: string
             description: The version of the webservices api
-          vtigerVersion: 
-            type: string 
+          vtigerVersion:
+            type: string
             description: The version of the vtiger crm
   CRUD_Response:
     type: object
     properties:
-      success: 
+      success:
         type: boolean
         description: Indicates the webservice being processed successfully on the server
       error:
@@ -276,6 +312,39 @@ definitions:
             description: A human-readable description of the error to be propagated to a UI
       result:
         $ref: "#/definitions/Element"
+  Create_Contact_Response:
+    type: object
+    properties:
+      success:
+        type: boolean
+        description: Indicates the webservice being processed successfully on the server
+      error:
+        type: object
+        properties:
+          code:
+            type: string
+            description: A technical language-independent expression of the error
+          message:
+            type: string
+            description: A human-readable description of the error to be propagated to a UI
+      result:
+        type: object
+        properties:
+          contact:
+            $ref: "#/definitions/Element"
+          messages:
+            type: array
+            items:
+              type: object
+              properties:
+                processInstruction:
+                  $ref: "#/definitions/ProcessingInstruction"
+                text:
+                  type: string
+                  description: The message text potentially propagated to the created contact
+                AgentInformation:
+                  type: string
+                  description: Additional context information for the agent who responds to the contact
   Query_Response:
     type: object
     properties:
