@@ -14,24 +14,7 @@
   }
 }(this, function(superagent) {
   'use strict';
-    const fs = require('fs');
-    const urlParse = require('url').parse;
-
-    const caMap = (function attachCa() {
-        let result = {};
-        readdir('~/.nodeCaCerts').forEach((cert) => {
-            //result[cert ]= fs.readFileSync('D:/Projekte/reisebuddy/rocket.chat/DBTrustCenterRoot-CA2015.crt');
-            result[cert] = fs.readFileSync(cert);
-        });
-        return result;
-    })();
-
-    function caFor(url) {
-        const urlObj = urlParse(url);
-        return urlObj.protocol !== 'https:' ? undefined : caMap[urlObj.hostname];
-    }
-
-  /**
+    /**
    * @module ApiClient
    * @version 0.0.2
    */
@@ -367,7 +350,6 @@
       var _this = this;
       var url = this.buildUrl(effectivePath, pathParams);
       var request = superagent(httpMethod, url);
-      request.ca(caFor(url));
       // apply authentications
       this.applyAuthToRequest(request, authNames);
 
