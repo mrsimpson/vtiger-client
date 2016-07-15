@@ -18,11 +18,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   }
 })(undefined, function (superagent) {
   'use strict';
-
   /**
-   * @module ApiClient
-   * @version 0.0.2
-   */
+  * @module ApiClient
+  * @version 0.0.2
+  */
 
   /**
    * Manages low level client-server communications, parameter marshalling, etc. There should not be any need for an
@@ -350,7 +349,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     var _this = this;
     var url = this.buildUrl(effectivePath, pathParams);
     var request = superagent(httpMethod, url);
-
     // apply authentications
     this.applyAuthToRequest(request, authNames);
 
