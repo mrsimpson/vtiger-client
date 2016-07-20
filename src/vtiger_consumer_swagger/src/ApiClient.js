@@ -14,8 +14,7 @@
   }
 }(this, function(superagent) {
   'use strict';
-
-  /**
+    /**
    * @module ApiClient
    * @version 0.1.1
    */
@@ -351,7 +350,6 @@
       var _this = this;
       var url = this.buildUrl(effectivePath, pathParams);
       var request = superagent(httpMethod, url);
-
       // apply authentications
       this.applyAuthToRequest(request, authNames);
 

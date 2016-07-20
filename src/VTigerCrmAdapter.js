@@ -114,7 +114,7 @@ export class VTigerCrmAdapter {
                         }
 
                         if (!response.body.success) {
-                            return reject(new VTigerCrmAdapterException('LOGIN', "Couldn't log in:", response.body.error.message));
+                            return reject(new VTigerCrmAdapterException('LOGIN', "Couldn't log in:", JSON.stringify(response)));
                         }
 
                         adapterInstance.sessionToken = response.body.result.sessionName;
@@ -146,7 +146,7 @@ export class VTigerCrmAdapter {
                 }
 
                 if (!response.body.success) {
-                    return reject(new VTigerCrmAdapterException('QUERY', "Couldn't execute query:", response.body.error.message));
+                    return reject(new VTigerCrmAdapterException('QUERY', "Couldn't execute query:", JSON.stringify(response)));
                 }
 
                 resolve(response.body.result); //might be initial
@@ -164,7 +164,7 @@ export class VTigerCrmAdapter {
                 }
 
                 if (!response.body.success) {
-                    return reject(new VTigerCrmAdapterException('CREATE', "Couldn't create:", response.body.error.message));
+                    return reject(new VTigerCrmAdapterException('CREATE', "Couldn't create:", JSON.stringify(response)));
                 }
 
                 resolve(response.body.result); //might be initial
@@ -200,7 +200,7 @@ export class VTigerCrmAdapter {
                 }
 
                 if (!response.body.success) {
-                    return reject(new VTigerCrmAdapterException('RETRIEVE', "Couldn't retrieve:", response.body.error.message));
+                    return reject(new VTigerCrmAdapterException('RETRIEVE', "Couldn't retrieve:", JSON.stringify(response)));
                 }
 
                 resolve(response.body.result); //might be initial
@@ -218,7 +218,7 @@ export class VTigerCrmAdapter {
                 }
 
                 if (!response.body.success) {
-                    return reject(new VTigerCrmAdapterException('UPDATE', "Couldn't update:", response.body.error.message));
+                    return reject(new VTigerCrmAdapterException('UPDATE', "Couldn't update:", JSON.stringify(response)));
                 }
 
                 resolve(response.body.result); //might be initial
@@ -236,7 +236,7 @@ export class VTigerCrmAdapter {
                 }
 
                 if (!response.body.success) {
-                    return reject(new VTigerCrmAdapterException('DELETE', "Couldn't delete:", response.body.error.message));
+                    return reject(new VTigerCrmAdapterException('DELETE', "Couldn't delete:", JSON.stringify(response)));
                 }
 
                 resolve(response.body.success); //might be initial

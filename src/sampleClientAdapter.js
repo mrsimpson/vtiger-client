@@ -3,16 +3,21 @@ const USER_ACCESS_KEY = 'XMvugt2SH21gjEhG';
 const USERNAME = 'reisebuddy';
 const ASSIGNED_USER_ID = '19x78';
 
-const adapter = new VTigerCrmAdapter('http://localhost/vtigercrm_dbd/webservice.php', USERNAME, USER_ACCESS_KEY, ASSIGNED_USER_ID);/**/
-const random = 'unittest_' + Math.floor(Math.random()*100000);
+const adapter = new VTigerCrmAdapter('http://localhost/vtigercrm_dbd/webservice.php', USERNAME, USER_ACCESS_KEY, ASSIGNED_USER_ID);
+/**/
+const random = 'unittest_' + Math.floor(Math.random() * 100000);
 
 function teardown() {
     "use strict";
-    return adapter.findContactsBySkeletonPromise({email: 'unittest%'}).then((contacts)=> {
-        if(Object.prototype.toString.call( contacts ) === '[object Array]') {
-            Promise.all(contacts.map((contact)=>adapter.deletePromise(contact.id)));
-        }
-    }).catch((err)=>{console.err(err)});
+    return adapter.findContactsBySkeletonPromise({email: 'unittest%'})
+        .then((contacts)=> {
+            if (Object.prototype.toString.call(contacts) === '[object Array]') {
+                Promise.all(contacts.map((contact)=>adapter.deletePromise(contact.id)));
+            }
+        })
+        .catch((err)=> {
+            console.error(err)
+        });
 }
 
 teardown() //start from scratch
