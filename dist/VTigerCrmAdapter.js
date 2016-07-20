@@ -235,7 +235,10 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
                         return reject(new VTigerCrmAdapterException('CREATE CONTACT WITH MESSAGE', "Couldn't create:", response.body.error.message));
                     }
 
-                    resolve({ createdContact: JSON.parse(response.body.result.contact), messages: response.body.result.messages }); //might be initial
+                    resolve({
+                        createdContact: JSON.parse(response.body.result.contact),
+                        messages: response.body.result.messages
+                    }); //might be initial
                 });
             });
         } //_createPromise
@@ -314,14 +317,18 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
             var queryString = "select * from Contacts where " + VTigerCrmAdapter.contactSkeletonToWhere(contactSkeleton, operator) + " LIMIT " + limit + ";";
 
             return adapterInstance._loginPromise().then(function (sessionToken) {
-                return adapterInstance._queryPromise(sessionToken, queryString);
+                return adapterInstance._queryPromise(sessionToken, queryString).catch(function (err) {
+                    console.error(new VTigerCrmAdapterException('QUERY', "Couldn't query:", err));
+                });
+            }).catch(function (err) {
+                console.error(new VTigerCrmAdapterException('LOGIN', "Couldn't log in:", err));
             });
-        } //findContactsBySkeletonPromise
-
-        // ------------------------------------------------- static helpers ----------------------------------------------------
-
+        }
     }], [{
         key: 'contactSkeletonToWhere',
+        //findContactsBySkeletonPromise
+
+        // ------------------------------------------------- static helpers ----------------------------------------------------
         value: function contactSkeletonToWhere(contact, operator) {
             var whereClause = '';
             for (var key in contact) {

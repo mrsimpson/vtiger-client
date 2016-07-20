@@ -185,7 +185,10 @@ export class VTigerCrmAdapter {
                     return reject(new VTigerCrmAdapterException('CREATE CONTACT WITH MESSAGE', "Couldn't create:", response.body.error.message));
                 }
 
-                resolve({ createdContact: JSON.parse(response.body.result.contact), messages: response.body.result.messages }); //might be initial
+                resolve({
+                    createdContact: JSON.parse(response.body.result.contact),
+                    messages: response.body.result.messages
+                }); //might be initial
             })
         })
     } //_createPromise
@@ -245,7 +248,7 @@ export class VTigerCrmAdapter {
     } //_deletePromise
 
 
-    findContactsBySkeletonPromise(contactSkeleton, operator = 'AND', limit=100) {
+    findContactsBySkeletonPromise(contactSkeleton, operator = 'AND', limit = 100) {
         /**
          * Operator defines how the properties of the contact skeleton are to be combined.
          * Possible values ['AND', 'OR']
@@ -253,18 +256,27 @@ export class VTigerCrmAdapter {
         const adapterInstance = this;
         const queryString = "select * from Contacts where " + VTigerCrmAdapter.contactSkeletonToWhere(contactSkeleton, operator) + " LIMIT " + limit + ";";
 
-        return adapterInstance._loginPromise().then((sessionToken)=>adapterInstance._queryPromise(sessionToken, queryString));
-    } //findContactsBySkeletonPromise
+        return adapterInstance._loginPromise()
+            .then((sessionToken)=>adapterInstance._queryPromise(sessionToken, queryString)
+                .catch((err)=> {
+                    console.error(new VTigerCrmAdapterException('QUERY', "Couldn't query:", err))
+                }))
+            .catch((err)=> {
+                console.error(new VTigerCrmAdapterException('LOGIN', "Couldn't log in:", err));
+            })
+    }; //findContactsBySkeletonPromise
 
 // ------------------------------------------------- static helpers ----------------------------------------------------
-    static contactSkeletonToWhere(contact, operator) {
-        let whereClause = '';
-        for (let key in contact) {
-            if (contact.hasOwnProperty(key)) {
-                if (whereClause) whereClause += ' ' + operator + ' ';
-                whereClause += key + " LIKE '" + contact[key] + "'";
+        static
+        contactSkeletonToWhere(contact, operator)
+        {
+            let whereClause = '';
+            for (let key in contact) {
+                if (contact.hasOwnProperty(key)) {
+                    if (whereClause) whereClause += ' ' + operator + ' ';
+                    whereClause += key + " LIKE '" + contact[key] + "'";
+                }
             }
+            return whereClause;
         }
-        return whereClause;
     }
-}
