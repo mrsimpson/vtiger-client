@@ -24,6 +24,7 @@ export class VTigerCrmAdapter {
         this.sessionToken = '';
         this.assigned_user_id = assigned_user_id;
         this.logger = logger;
+        this.overlapSessionSeconds = 10;
 
         this.vTigerApi = new VTigerCrm.DefaultApi(); // Allocate the API class we're going to use.
         this.vTigerApi.apiClient.basePath = basePath;
@@ -107,6 +108,11 @@ export class VTigerCrmAdapter {
                     }
 
                     const challengeToken = response.body.result.token;
+
+                    //trigger invalidation of session token - Invalidate a bit earlier than actually necessary in order to avoid errors right at the expireTime
+                    setTimeout(()=>{
+                        adapterInstance.sessionToken = undefined;
+                    }, ((response.body.result.expireTime - response.body.result.serverTime) - adapterInstance.overlapSessionSeconds) * 1000);
 
                     adapterInstance.vTigerApi.operationloginPost(adapterInstance.username, CryptoJS.MD5(challengeToken + adapterInstance.accesskey).toString(), (err, data, response)=> {
                         if (err) {
