@@ -4,7 +4,7 @@ const USERNAME = 'reisebuddy';
 const ASSIGNED_USER_ID = '19x78';
 
 const adapter = new VTigerCrmAdapter('http://localhost/vtigercrm_dbd/webservice.php', USERNAME, USER_ACCESS_KEY, ASSIGNED_USER_ID);
-/**/
+
 const random = 'unittest_' + Math.floor(Math.random() * 100000);
 
 function teardown() {
