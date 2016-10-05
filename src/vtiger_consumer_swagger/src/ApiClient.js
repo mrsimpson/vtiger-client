@@ -405,6 +405,8 @@
       }
     });
 
+    console.debug(JSON.stringify(request));
+
     return request;
   };
 

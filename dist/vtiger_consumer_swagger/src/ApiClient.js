@@ -403,6 +403,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
     });
 
+    console.debug(JSON.stringify(request));
+
     return request;
   };
 
