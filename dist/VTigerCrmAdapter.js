@@ -199,6 +199,7 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
                     }
 
                     if (!response.body.success) {
+                        console.log('QUERY-STRING', queryString);
                         return reject(new VTigerCrmAdapterException('QUERY', "Couldn't execute query:", JSON.stringify(response)));
                     }
 
@@ -324,7 +325,7 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
 
             return adapterInstance._loginPromise().then(function (sessionToken) {
                 return adapterInstance._queryPromise(sessionToken, queryString).catch(function (err) {
-                    console.error(new VTigerCrmAdapterException('QUERY', "Couldn't query:", err));
+                    console.error(new VTigerCrmAdapterException('QUERY', "Couldn't query:", err), 'Query-String', queryString);
                 });
             }).catch(function (err) {
                 console.error(new VTigerCrmAdapterException('LOGIN', "Couldn't log in:", err));
@@ -339,8 +340,10 @@ var VTigerCrmAdapter = exports.VTigerCrmAdapter = function () {
             var whereClause = '';
             for (var key in contact) {
                 if (contact.hasOwnProperty(key)) {
-                    if (whereClause) whereClause += ' ' + operator + ' ';
-                    whereClause += key + " LIKE '" + contact[key] + "'";
+                    if (contact[key] && contact[key].trim() != "") {
+                        if (whereClause) whereClause += ' ' + operator + ' ';
+                        whereClause += key + " LIKE '" + contact[key] + "'";
+                    }
                 }
             }
             return whereClause;

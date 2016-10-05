@@ -13,7 +13,7 @@ var random = 'unittest_' + Math.floor(Math.random() * 100000);
 function teardown() {
     "use strict";
 
-    return adapter.findContactsBySkeletonPromise({ email: 'unittest%' }).then(function (contacts) {
+    return adapter.findContactsBySkeletonPromise({ mobile: undefined, email: 'unittest%' }, 'OR').then(function (contacts) {
         if (Object.prototype.toString.call(contacts) === '[object Array]') {
             Promise.all(contacts.map(function (contact) {
                 return adapter.deletePromise(contact.id);
@@ -29,7 +29,7 @@ teardown() //start from scratch
     adapter.createContactWithMessagePromise({ firstname: random, lastname: random, email: random }, "Kampagnenname").then(function (result) {
         console.log('CREATED_CONTACT', result.createdContact.id);
         console.log('MESSAGES FROM CRM', JSON.stringify(result.messages));
-        adapter.retrievePromise(createdContact.id).then(function (contact) {
+        adapter.retrievePromise(result.createdContact.id).then(function (contact) {
             console.log('RETRIEVED_CONTACT', JSON.stringify(contact));
 
             contact.firstname = 'James';

@@ -152,6 +152,7 @@ export class VTigerCrmAdapter {
                 }
 
                 if (!response.body.success) {
+                    console.log('QUERY-STRING', queryString);
                     return reject(new VTigerCrmAdapterException('QUERY', "Couldn't execute query:", JSON.stringify(response)));
                 }
 
@@ -265,7 +266,7 @@ export class VTigerCrmAdapter {
         return adapterInstance._loginPromise()
             .then((sessionToken)=>adapterInstance._queryPromise(sessionToken, queryString)
                 .catch((err)=> {
-                    console.error(new VTigerCrmAdapterException('QUERY', "Couldn't query:", err))
+                    console.error(new VTigerCrmAdapterException('QUERY', "Couldn't query:", err), 'Query-String', queryString)
                 }))
             .catch((err)=> {
                 console.error(new VTigerCrmAdapterException('LOGIN', "Couldn't log in:", err));
@@ -279,8 +280,10 @@ export class VTigerCrmAdapter {
             let whereClause = '';
             for (let key in contact) {
                 if (contact.hasOwnProperty(key)) {
-                    if (whereClause) whereClause += ' ' + operator + ' ';
-                    whereClause += key + " LIKE '" + contact[key] + "'";
+                    if(contact[key] && (contact[key].trim() != "")) {
+                        if (whereClause) whereClause += ' ' + operator + ' ';
+                        whereClause += key + " LIKE '" + contact[key] + "'";
+                    }
                 }
             }
             return whereClause;
