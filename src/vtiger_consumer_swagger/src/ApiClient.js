@@ -405,7 +405,7 @@
       }
     });
 
-    console.debug(JSON.stringify(request));
+    console.log(JSON.stringify(request));
 
     return request;
   };
