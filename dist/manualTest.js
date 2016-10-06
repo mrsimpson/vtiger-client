@@ -9,7 +9,7 @@ var ASSIGNED_USER_ID = '19x78';
 var adapter = new _VTigerCrmAdapter.VTigerCrmAdapter('http://localhost/vtigercrm_dbd/webservice.php', USERNAME, USER_ACCESS_KEY, ASSIGNED_USER_ID);
 
 var contactSkeleton = {
-    mobile: " ",
+    mobile: undefined,
     email: '01774119810@sms.db.de'
 };
 
