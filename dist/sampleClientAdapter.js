@@ -11,8 +11,6 @@ var adapter = new _VTigerCrmAdapter.VTigerCrmAdapter('http://localhost/vtigercrm
 var random = 'unittest_' + Math.floor(Math.random() * 100000);
 
 function teardown() {
-    "use strict";
-
     return adapter.findContactsBySkeletonPromise({ mobile: undefined, email: 'unittest%' }, 'OR').then(function (contacts) {
         if (Object.prototype.toString.call(contacts) === '[object Array]') {
             Promise.all(contacts.map(function (contact) {
