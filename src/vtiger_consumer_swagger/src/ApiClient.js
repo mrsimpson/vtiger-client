@@ -370,6 +370,8 @@
     } else {
       if(console.debug){
         console.debug('Request:', JSON.stringify(request), 'QueryString', JSON.stringify(request.qs));
+      } else {
+        console.log('Request:', JSON.stringify(request), 'QueryString', JSON.stringify(request.qs));
       }
     }
 
