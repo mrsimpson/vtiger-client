@@ -364,6 +364,12 @@
     // set request timeout
     request.timeout(this.timeout);
 
+    if(SystemLogger && SystemLogger.info){
+      SystemLogger.info('Request:', JSON.stringify(request), 'QueryString', JSON.stringify(request.qs));
+    } else {
+      console.info('Request:', JSON.stringify(request), 'QueryString', JSON.stringify(request.qs));
+    }
+
     var contentType = this.jsonPreferredMime(contentTypes);
     if (contentType) {
       request.type(contentType);
@@ -404,8 +410,6 @@
         callback(error, data, response);
       }
     });
-
-    console.log(JSON.stringify(request));
 
     return request;
   };
